@@ -196,6 +196,9 @@ static int wlan_hdd_inited;
 static char fwpath_mode_local[BUF_LEN];
 #endif
 
+#define MAX_REGDMN_LEN					10
+extern char wlan_regdmn[MAX_REGDMN_LEN];
+
 /*
  * spinlock for synchronizing asynchronous request/response
  * (full description of use in wlan_hdd_main.h)
@@ -17175,6 +17178,11 @@ int hdd_wlan_startup(struct device *dev, v_VOID_t *hif_sc)
                 "%s: module enable_dfs_chan_scan set to %d",
                 __func__, enable_dfs_chan_scan);
       }
+
+      /* If 'World' regdomain selected, enable 802.11d by default */
+      if (!strcmp(wlan_regdmn, "World"))
+         pHddCtx->cfg_ini->Is11dSupportEnabled = 1;
+
       if (0 == enable_11d || 1 == enable_11d)
       {
          pHddCtx->cfg_ini->Is11dSupportEnabled = enable_11d;

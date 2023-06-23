@@ -91,7 +91,7 @@ static u_int32_t refclk_speed_to_hz[] = {
 #endif
 
 #define MAX_REGDMN_LEN					10
-static char wlan_regdmn[MAX_REGDMN_LEN] = "US";
+char wlan_regdmn[MAX_REGDMN_LEN] = "US";
 module_param_string(regdmn, wlan_regdmn, MAX_REGDMN_LEN, 0444);
 MODULE_PARM_DESC(regdmn, "Regulatory domain");
 
