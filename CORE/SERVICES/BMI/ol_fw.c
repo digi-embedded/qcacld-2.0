@@ -90,6 +90,11 @@ static u_int32_t refclk_speed_to_hz[] = {
 #define PREFIX ""
 #endif
 
+#define MAX_REGDMN_LEN					10
+static char wlan_regdmn[MAX_REGDMN_LEN] = "US";
+module_param_string(regdmn, wlan_regdmn, MAX_REGDMN_LEN, 0444);
+MODULE_PARM_DESC(regdmn, "Regulatory domain");
+
 static struct ol_fw_files FW_FILES_QCA6174_FW_1_1 = {
 	PREFIX "qwlan11.bin", "", PREFIX "bdwlan11.bin",
 	PREFIX "otp11.bin", PREFIX "utf11.bin",
@@ -2393,6 +2398,7 @@ int ol_download_firmware(struct ol_softc *scn)
 #if defined(HIF_PCI) || defined(HIF_SDIO)
 	A_STATUS ret;
 #endif
+	char bdf_name[MAX_FILE_NAME];
 
 #if defined(CONFIG_NON_QC_PLATFORM_PCI)
 		if (0 != get_fw_files_for_non_qc_pci_target(&scn->fw_files,
@@ -2415,6 +2421,12 @@ int ol_download_firmware(struct ol_softc *scn)
                 return -1;
        }
 #endif
+	sprintf(bdf_name, "bdwlan30_%s.bin", wlan_regdmn);
+	strncpy(scn->fw_files.board_data, bdf_name, MAX_FILE_NAME);
+	strncpy(scn->fw_files.utf_board_data, bdf_name, MAX_FILE_NAME);
+	printk("%s: Loading files for '%s' regulatory domain\n",
+			__func__, wlan_regdmn);
+
 	/* Transfer Board Data from Target EEPROM to Target RAM */
 	/* Determine where in Target RAM to write Board Data */
 	BMIReadMemory(scn->hif_hdl,
