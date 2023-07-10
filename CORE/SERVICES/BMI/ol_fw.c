@@ -63,6 +63,11 @@
 static struct hash_fw fw_hash;
 #endif
 
+#define MAX_REGDMN_LEN					10
+char wlan_regdmn[MAX_REGDMN_LEN] = "US";
+module_param_string(regdmn, wlan_regdmn, MAX_REGDMN_LEN, 0444);
+MODULE_PARM_DESC(regdmn, "Regulatory domain");
+
 #if defined(HIF_PCI) || defined(HIF_SDIO)
 static u_int32_t refclk_speed_to_hz[] = {
 	48000000, /* SOC_REFCLK_48_MHZ */
@@ -89,11 +94,6 @@ static u_int32_t refclk_speed_to_hz[] = {
 #else
 #define PREFIX ""
 #endif
-
-#define MAX_REGDMN_LEN					10
-char wlan_regdmn[MAX_REGDMN_LEN] = "US";
-module_param_string(regdmn, wlan_regdmn, MAX_REGDMN_LEN, 0444);
-MODULE_PARM_DESC(regdmn, "Regulatory domain");
 
 static struct ol_fw_files FW_FILES_QCA6174_FW_1_1 = {
 	PREFIX "qwlan11.bin", "", PREFIX "bdwlan11.bin",
