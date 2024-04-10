@@ -68,7 +68,7 @@ static void *memdump_get_file_data(struct file *file)
 {
 	void *hdd_ctx;
 
-	hdd_ctx = PDE_DATA(file_inode(file));
+	hdd_ctx = pde_data(file_inode(file));
 	return hdd_ctx;
 }
 #else
