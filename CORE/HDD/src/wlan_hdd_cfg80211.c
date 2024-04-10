@@ -20169,6 +20169,7 @@ static int __wlan_hdd_cfg80211_change_iface(struct wiphy *wiphy,
     VOS_STATUS vstatus;
     eHalStatus hstatus;
     int status;
+    u8 addr[ETH_ALEN];
 
     ENTER();
 
@@ -20287,12 +20288,13 @@ static int __wlan_hdd_cfg80211_change_iface(struct wiphy *wiphy,
                 /* To meet Android requirements create a randomized
                    MAC address of the form 02:1A:11:Fx:xx:xx */
                 get_random_bytes(&ndev->dev_addr[3], 3);
-                ndev->dev_addr[0] = 0x02;
-                ndev->dev_addr[1] = 0x1A;
-                ndev->dev_addr[2] = 0x11;
-                ndev->dev_addr[3] |= 0xF0;
-                memcpy(pAdapter->macAddressCurrent.bytes, ndev->dev_addr,
-                       VOS_MAC_ADDR_SIZE);
+
+		ether_addr_copy(addr, ndev->dev_addr);
+                addr[0] = 0x02;
+                addr[1] = 0x1A;
+                addr[2] = 0x11;
+                addr[3] |= 0xF0;
+		eth_hw_addr_set(ndev, addr);
                 pr_info("wlan: Generated HotSpot BSSID "MAC_ADDRESS_STR"\n",
                         MAC_ADDR_ARRAY(ndev->dev_addr));
             }
