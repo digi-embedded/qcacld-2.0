@@ -832,7 +832,7 @@ static int tx_completion_task(void *param)
 	while (device->tx_completion_req != NULL)
 		tx_clean_completion_list(device);
 
-	complete_and_exit(&device->tx_completion_exit, 0);
+	kthread_complete_and_exit(&device->tx_completion_exit, 0);
 	return 0;
 }
 
@@ -1064,7 +1064,7 @@ static int async_task(void *param)
         sdio_release_host(device->func);
     }
 
-    complete_and_exit(&device->async_completion, 0);
+    kthread_complete_and_exit(&device->async_completion, 0);
     return 0;
 }
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,32))

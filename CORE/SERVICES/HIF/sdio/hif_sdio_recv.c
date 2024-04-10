@@ -1024,7 +1024,7 @@ int rx_completion_task(void *param)
         }
         adf_os_spin_unlock_irqrestore(&device->pRecvTask->rx_alloc_lock);
     }
-    complete_and_exit(&device->pRecvTask->rx_completion_exit, 0);
+    kthread_kthread_complete_and_exit(&device->pRecvTask->rx_completion_exit, 0);
     return 0;
 }
 #endif

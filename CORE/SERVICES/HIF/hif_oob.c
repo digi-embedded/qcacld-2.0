@@ -84,7 +84,7 @@ static int oob_task(void *pm_oob)
 		}
 	}
 
-	complete_and_exit(&hif_oob->oob_completion, 0);
+	kthread_kthread_complete_and_exit(&hif_oob->oob_completion, 0);
 
 	return 0;
 }

@@ -972,7 +972,7 @@ VosMCThread
   // If we get here the MC thread must exit
   VOS_TRACE( VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_ERROR,
       "%s: MC Thread exiting!!!!", __func__);
-  complete_and_exit(&pSchedContext->McShutdown, 0);
+  kthread_complete_and_exit(&pSchedContext->McShutdown, 0);
 } /* VosMCThread() */
 
 v_BOOL_t isWDresetInProgress(void)
@@ -1263,7 +1263,7 @@ VosWDThread
   // If we get here the Watchdog thread must exit
   VOS_TRACE( VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_INFO,
       "%s: Watchdog Thread exiting !!!!", __func__);
-  complete_and_exit(&pWdContext->WdShutdown, 0);
+  kthread_complete_and_exit(&pWdContext->WdShutdown, 0);
 
 err_reset:
     VOS_TRACE( VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_FATAL,
@@ -1553,7 +1553,7 @@ static int VosTlshimRxThread(void *arg)
 
    VOS_TRACE(VOS_MODULE_ID_VOSS, VOS_TRACE_LEVEL_ERROR,
              "%s: Exiting VOSS Tlshim rx thread", __func__);
-   complete_and_exit(&pSchedContext->TlshimRxShutdown, 0);
+   kthread_complete_and_exit(&pSchedContext->TlshimRxShutdown, 0);
 }
 #endif
 

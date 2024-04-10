@@ -800,7 +800,7 @@ static int wlan_logging_thread(void *Arg)
 	}
 
 
-	complete_and_exit(&gwlan_logging.shutdown_comp, 0);
+	kthread_complete_and_exit(&gwlan_logging.shutdown_comp, 0);
 
 	return 0;
 }

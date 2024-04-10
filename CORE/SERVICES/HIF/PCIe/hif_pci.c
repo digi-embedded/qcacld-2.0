@@ -774,7 +774,7 @@ hif_completion_thread_shutdown(struct HIF_CE_state *hif_state)
     }
 
     //hif_state->compl_thread = NULL;
-    //complete_and_exit(&hif_state->compl_thread_done, 0);
+    //kthread_kthread_complete_and_exit(&hif_state->compl_thread_done, 0);
 }
 
 /*
