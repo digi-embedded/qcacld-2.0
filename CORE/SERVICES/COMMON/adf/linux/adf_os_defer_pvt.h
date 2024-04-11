@@ -109,12 +109,17 @@ static inline void __adf_os_destroy_workqueue(adf_os_handle_t hdl, __adf_os_work
     destroy_workqueue(wqueue);
 }
 
+static void adf_os_bh_wrapper(unsigned long arg) {
+	adf_os_defer_fn_t original_func = (adf_os_defer_fn_t)arg;
+	original_func(NULL);
+}
+
 static inline  a_status_t __adf_os_init_bh(adf_os_handle_t  hdl,
                                      struct tasklet_struct *bh,
                                      adf_os_defer_fn_t  func,
                                      void               *arg)
 {
-     tasklet_init(bh, (__adf_os_bh_fn_t)func, (unsigned long)arg);
+     tasklet_init(bh, adf_os_bh_wrapper, (unsigned long)arg);
 
      return A_STATUS_OK;
 }

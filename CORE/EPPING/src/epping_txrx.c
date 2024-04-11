@@ -246,16 +246,6 @@ end:
    return ret;
 }
 
-static int epping_set_mac_address(struct net_device *dev, void *addr)
-{
-   epping_adapter_t *pAdapter = netdev_priv(dev);
-   struct sockaddr *psta_mac_addr = addr;
-   vos_mem_copy(&pAdapter->macAddressCurrent,
-                psta_mac_addr->sa_data, ETH_ALEN);
-   vos_mem_copy(dev->dev_addr, psta_mac_addr->sa_data, ETH_ALEN);
-   return 0;
-}
-
 static void epping_stop_adapter(epping_adapter_t *pAdapter)
 {
    struct device *dev;
@@ -368,7 +358,7 @@ static struct net_device_ops epping_drv_ops = {
    .ndo_tx_timeout = epping_tx_queue_timeout,
    .ndo_get_stats = epping_get_stats,
    .ndo_do_ioctl = epping_ndev_ioctl,
-   .ndo_set_mac_address = epping_set_mac_address,
+   .ndo_set_mac_address = eth_mac_addr,
    .ndo_select_queue    = NULL,
  };
 
@@ -397,7 +387,7 @@ epping_adapter_t *epping_add_adapter(epping_context_t *pEpping_ctx,
    pAdapter->dev = dev;
    pAdapter->pEpping_ctx = pEpping_ctx;
    pAdapter->device_mode = device_mode; /* station, SAP, etc */
-   vos_mem_copy(dev->dev_addr, (void *)macAddr, sizeof(tSirMacAddr));
+   vos_mem_copy((void *)dev->dev_addr, (void *)macAddr, sizeof(tSirMacAddr));
    vos_mem_copy(pAdapter->macAddressCurrent.bytes,
                 macAddr, sizeof(tSirMacAddr));
    adf_os_spinlock_init(&pAdapter->data_lock);

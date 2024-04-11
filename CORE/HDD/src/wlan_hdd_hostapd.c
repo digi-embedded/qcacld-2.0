@@ -1034,7 +1034,6 @@ void hdd_restart_softap(hdd_context_t *pHddCtx,
  */
 static int __hdd_hostapd_set_mac_address(struct net_device *dev, void *addr)
 {
-   struct sockaddr *psta_mac_addr = addr;
    hdd_adapter_t *adapter;
    hdd_context_t *hdd_ctx;
    int ret = 0;
@@ -1044,12 +1043,11 @@ static int __hdd_hostapd_set_mac_address(struct net_device *dev, void *addr)
    adapter = WLAN_HDD_GET_PRIV_PTR(dev);
    hdd_ctx = WLAN_HDD_GET_CTX(adapter);
    ret = wlan_hdd_validate_context(hdd_ctx);
-   if (0 != ret)
-       return ret;
+   if (ret)
+      ret = eth_mac_addr(dev, addr);
 
-   memcpy(dev->dev_addr, psta_mac_addr->sa_data, ETH_ALEN);
    EXIT();
-   return 0;
+   return ret;
 }
 
 /**
@@ -7946,7 +7944,7 @@ hdd_adapter_t* hdd_wlan_create_ap_dev(hdd_context_t *pHddCtx,
         pWlanHostapdDev->mtu = HDD_DEFAULT_MTU;
         pWlanHostapdDev->tx_queue_len = HDD_NETDEV_TX_QUEUE_LEN;
 
-        vos_mem_copy(pWlanHostapdDev->dev_addr, (void *)macAddr,sizeof(tSirMacAddr));
+        vos_mem_copy((void *)pWlanHostapdDev->dev_addr, (void *)macAddr,sizeof(tSirMacAddr));
         vos_mem_copy(pHostapdAdapter->macAddressCurrent.bytes, (void *)macAddr, sizeof(tSirMacAddr));
 
         pHostapdAdapter->offloads_configured = FALSE;

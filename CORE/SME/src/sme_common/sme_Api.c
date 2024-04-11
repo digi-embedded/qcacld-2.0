@@ -7417,7 +7417,7 @@ eHalStatus sme_OemDataReq(tHalHandle hHal,
  *
  * Return: eHAL_STATUS_SUCCESS on success, non-zero error code on failure.
  */
-eHalStatus sme_create_mon_session(tHalHandle hal_handle, tSirMacAddr bss_id)
+eHalStatus sme_create_mon_session(tHalHandle hal_handle, tSirMacAddr *bss_id)
 {
 	eHalStatus status = eHAL_STATUS_SUCCESS;
 	struct sir_create_session *msg;
