@@ -344,21 +344,12 @@ static int pktlog_sysctl_register(struct ol_softc *scn)
 {
 	struct ol_pktlog_dev_t *pl_dev = get_pl_handle(scn);
 	struct ath_pktlog_info_lnx *pl_info_lnx;
-	char *proc_name;
 
 	if (pl_dev) {
 		pl_info_lnx = PL_INFO_LNX(pl_dev->pl_info);
-		proc_name = pl_dev->name;
 	} else {
 		pl_info_lnx = PL_INFO_LNX(g_pktlog_info);
-		proc_name = PKTLOG_PROC_SYSTEM;
 	}
-
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,31))
-#define set_ctl_name(a, b)	/* nothing */
-#else
-#define set_ctl_name(a, b)	pl_info_lnx->sysctls[a].ctl_name = b
-#endif
 
 	/*
 	 * Setup the sysctl table for creating the following sysctl entries:
@@ -366,96 +357,80 @@ static int pktlog_sysctl_register(struct ol_softc *scn)
 	 * pktlog
 	 * /proc/sys/PKTLOG_PROC_DIR/<adapter>/size for changing the buffer size
 	 */
-	memset(pl_info_lnx->sysctls, 0, sizeof(pl_info_lnx->sysctls));
-	set_ctl_name(0, CTL_AUTO);
-	pl_info_lnx->sysctls[0].procname = PKTLOG_PROC_DIR;
-	pl_info_lnx->sysctls[0].mode = PKTLOG_PROCSYS_DIR_PERM;
-	pl_info_lnx->sysctls[0].child = &pl_info_lnx->sysctls[2];
-	/* [1] is NULL terminator */
-	set_ctl_name(2, CTL_AUTO);
-	pl_info_lnx->sysctls[2].procname = proc_name;
-	pl_info_lnx->sysctls[2].mode = PKTLOG_PROCSYS_DIR_PERM;
-	pl_info_lnx->sysctls[2].child = &pl_info_lnx->sysctls[4];
-	/* [3] is NULL terminator */
-	set_ctl_name(4, CTL_AUTO);
-	pl_info_lnx->sysctls[4].procname = "enable";
-	pl_info_lnx->sysctls[4].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[4].proc_handler = ath_sysctl_pktlog_enable;
-	pl_info_lnx->sysctls[4].extra1 = scn;
 
-	set_ctl_name(5, CTL_AUTO);
-	pl_info_lnx->sysctls[5].procname = "size";
-	pl_info_lnx->sysctls[5].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[5].proc_handler = ath_sysctl_pktlog_size;
-	pl_info_lnx->sysctls[5].extra1 = scn;
+	static struct ctl_table kdump_ctl_table[] = {
+	{
+		.procname = "enable",
+		.maxlen = sizeof(int),
+		.mode = 0644,
+		.proc_handler = ath_sysctl_pktlog_enable
+	},
+	{
+		.procname = "size",
+		.maxlen = sizeof(int),
+		.mode = 0644,
+		.proc_handler = ath_sysctl_pktlog_size
+	},
+	{
+		.procname = "options",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "sack_thr",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "tail_length",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "thruput_thresh",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "phyerr_thresh",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "per_thresh",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{
+		.procname = "trigger_interval",
+		.mode = 0644,
+		.proc_handler = proc_dointvec,
+	},
+	{ }
+	};
 
-	set_ctl_name(6, CTL_AUTO);
-	pl_info_lnx->sysctls[6].procname = "options";
-	pl_info_lnx->sysctls[6].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[6].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[6].data = &pl_info_lnx->info.options;
-	pl_info_lnx->sysctls[6].maxlen = sizeof(pl_info_lnx->info.options);
+	kdump_ctl_table[1].extra1 = scn;
+	kdump_ctl_table[2].data = &pl_info_lnx->info.options;
+	kdump_ctl_table[2].maxlen = sizeof(pl_info_lnx->info.options);
+	kdump_ctl_table[3].data = &pl_info_lnx->info.sack_thr;
+	kdump_ctl_table[3].maxlen = sizeof(pl_info_lnx->info.sack_thr);
+	kdump_ctl_table[4].data = &pl_info_lnx->info.tail_length;
+	kdump_ctl_table[4].maxlen = sizeof(pl_info_lnx->info.tail_length);
+	kdump_ctl_table[5].data = &pl_info_lnx->info.thruput_thresh;
+	kdump_ctl_table[5].maxlen = sizeof(pl_info_lnx->info.thruput_thresh);
+	kdump_ctl_table[6].data = &pl_info_lnx->info.phyerr_thresh;
+	kdump_ctl_table[6].maxlen = sizeof(pl_info_lnx->info.phyerr_thresh);
+	kdump_ctl_table[7].data = &pl_info_lnx->info.per_thresh;
+	kdump_ctl_table[7].maxlen = sizeof(pl_info_lnx->info.per_thresh);
+	kdump_ctl_table[8].data = &pl_info_lnx->info.trigger_interval;
+	kdump_ctl_table[8].maxlen = sizeof(pl_info_lnx->info.trigger_interval);
 
-	set_ctl_name(7, CTL_AUTO);
-	pl_info_lnx->sysctls[7].procname = "sack_thr";
-	pl_info_lnx->sysctls[7].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[7].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[7].data = &pl_info_lnx->info.sack_thr;
-	pl_info_lnx->sysctls[7].maxlen = sizeof(pl_info_lnx->info.sack_thr);
-
-	set_ctl_name(8, CTL_AUTO);
-	pl_info_lnx->sysctls[8].procname = "tail_length";
-	pl_info_lnx->sysctls[8].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[8].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[8].data = &pl_info_lnx->info.tail_length;
-	pl_info_lnx->sysctls[8].maxlen = sizeof(pl_info_lnx->info.tail_length);
-
-	set_ctl_name(9, CTL_AUTO);
-	pl_info_lnx->sysctls[9].procname = "thruput_thresh";
-	pl_info_lnx->sysctls[9].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[9].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[9].data = &pl_info_lnx->info.thruput_thresh;
-	pl_info_lnx->sysctls[9].maxlen =
-				sizeof(pl_info_lnx->info.thruput_thresh);
-
-	set_ctl_name(10, CTL_AUTO);
-	pl_info_lnx->sysctls[10].procname = "phyerr_thresh";
-	pl_info_lnx->sysctls[10].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[10].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[10].data = &pl_info_lnx->info.phyerr_thresh;
-	pl_info_lnx->sysctls[10].maxlen =
-				sizeof(pl_info_lnx->info.phyerr_thresh);
-
-	set_ctl_name(11, CTL_AUTO);
-	pl_info_lnx->sysctls[11].procname = "per_thresh";
-	pl_info_lnx->sysctls[11].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[11].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[11].data = &pl_info_lnx->info.per_thresh;
-	pl_info_lnx->sysctls[11].maxlen = sizeof(pl_info_lnx->info.per_thresh);
-
-	set_ctl_name(12, CTL_AUTO);
-	pl_info_lnx->sysctls[12].procname = "trigger_interval";
-	pl_info_lnx->sysctls[12].mode = PKTLOG_PROCSYS_PERM;
-	pl_info_lnx->sysctls[12].proc_handler = proc_dointvec;
-	pl_info_lnx->sysctls[12].data = &pl_info_lnx->info.trigger_interval;
-	pl_info_lnx->sysctls[12].maxlen =
-				sizeof(pl_info_lnx->info.trigger_interval);
-	/* [13] is NULL terminator */
-
-	/* and register everything */
-	/* register_sysctl_table changed from 2.6.21 onwards */
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,20))
 	pl_info_lnx->sysctl_header =
-			register_sysctl_table(pl_info_lnx->sysctls);
-#else
-	pl_info_lnx->sysctl_header =
-			register_sysctl_table(pl_info_lnx->sysctls, 1);
-#endif
+			register_sysctl("ath_pktlog/cld", kdump_ctl_table);
 	if (!pl_info_lnx->sysctl_header) {
-		printk("%s: failed to register sysctls!\n", proc_name);
+		printk("failed to register sysctls!\n");
 		return -1;
 	}
-
 	return 0;
 }
 
