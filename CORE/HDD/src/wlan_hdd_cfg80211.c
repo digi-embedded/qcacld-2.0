@@ -29929,7 +29929,9 @@ static int __wlan_hdd_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 #if TDLS_MGMT_VERSION2
 static int wlan_hdd_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 					struct net_device *dev,
-					u8 *peer, u8 action_code,
+					u8 *peer,
+					int link_id,
+					u8 action_code,
 					u8 dialog_token,
 					u16 status_code, u32 peer_capability,
 					const u8 *buf, size_t len)
@@ -29937,7 +29939,9 @@ static int wlan_hdd_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 17, 0)) || defined(WITH_BACKPORTS)
 static int wlan_hdd_cfg80211_tdls_mgmt(struct wiphy *wiphy,
 					struct net_device *dev,
-					const u8 *peer, u8 action_code,
+					const u8 *peer,
+					int link_id,
+					u8 action_code,
 					u8 dialog_token, u16 status_code,
 					u32 peer_capability, bool initiator,
 					const u8 *buf, size_t len)
@@ -30516,7 +30520,7 @@ int wlan_hdd_cfg80211_send_tdls_discover_req(struct wiphy *wiphy,
                             WLAN_TDLS_DISCOVERY_REQUEST, 1, 0, 0, NULL, 0);
 #else
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) || defined(WITH_BACKPORTS)
-    return wlan_hdd_cfg80211_tdls_mgmt(wiphy, dev, peer,
+    return wlan_hdd_cfg80211_tdls_mgmt(wiphy, dev, peer, -1,
                             WLAN_TDLS_DISCOVERY_REQUEST, 1, 0, 0, 0, NULL, 0);
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
     return wlan_hdd_cfg80211_tdls_mgmt(wiphy, dev, peer,
