@@ -11088,8 +11088,7 @@ static hdd_adapter_t* hdd_alloc_station_adapter(hdd_context_t *pHddCtx,
       //Init the net_device structure
       strlcpy(pWlanDev->name, name, IFNAMSIZ);
 
-      vos_mem_copy((void *)pWlanDev->dev_addr, (void *)macAddr, sizeof(tSirMacAddr));
-      vos_mem_copy( pAdapter->macAddressCurrent.bytes, macAddr, sizeof(tSirMacAddr));
+      dev_addr_set(pWlanDev, macAddr);
       pWlanDev->watchdog_timeo = HDD_TX_TIMEOUT;
       /*
        * kernel will consume ethernet header length buffer for hard_header,
@@ -11159,10 +11158,7 @@ static hdd_adapter_t *hdd_alloc_monitor_adapter(hdd_context_t *pHddCtx,
 	   /* Init the net_device structure */
 	   strlcpy(pwlan_dev->name, name, IFNAMSIZ);
 
-	   vos_mem_copy((void *)pwlan_dev->dev_addr,
-			(void *)macAddr, sizeof(tSirMacAddr));
-	   vos_mem_copy(pAdapter->macAddressCurrent.bytes,
-			macAddr, sizeof(tSirMacAddr));
+	   dev_addr_set(pwlan_dev, macAddr);
 	   pwlan_dev->watchdog_timeo = HDD_TX_TIMEOUT;
 	   /*
 	    * kernel will consume ethernet header length buffer for hard_header,

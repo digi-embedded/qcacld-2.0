@@ -7944,8 +7944,7 @@ hdd_adapter_t* hdd_wlan_create_ap_dev(hdd_context_t *pHddCtx,
         pWlanHostapdDev->mtu = HDD_DEFAULT_MTU;
         pWlanHostapdDev->tx_queue_len = HDD_NETDEV_TX_QUEUE_LEN;
 
-        vos_mem_copy((void *)pWlanHostapdDev->dev_addr, (void *)macAddr,sizeof(tSirMacAddr));
-        vos_mem_copy(pHostapdAdapter->macAddressCurrent.bytes, (void *)macAddr, sizeof(tSirMacAddr));
+        dev_addr_set(pWlanHostapdDev, macAddr);
 
         pHostapdAdapter->offloads_configured = FALSE;
         hdd_dev_setup_destructor(pWlanHostapdDev);

@@ -387,9 +387,7 @@ epping_adapter_t *epping_add_adapter(epping_context_t *pEpping_ctx,
    pAdapter->dev = dev;
    pAdapter->pEpping_ctx = pEpping_ctx;
    pAdapter->device_mode = device_mode; /* station, SAP, etc */
-   vos_mem_copy((void *)dev->dev_addr, (void *)macAddr, sizeof(tSirMacAddr));
-   vos_mem_copy(pAdapter->macAddressCurrent.bytes,
-                macAddr, sizeof(tSirMacAddr));
+   dev_addr_set(dev, macAddr);
    adf_os_spinlock_init(&pAdapter->data_lock);
    adf_nbuf_queue_init(&pAdapter->nodrop_queue);
    pAdapter->epping_timer_state = EPPING_TX_TIMER_STOPPED;
