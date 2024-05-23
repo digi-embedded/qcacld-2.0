@@ -1574,6 +1574,7 @@ CE_init(struct hif_pci_softc *sc,
     ctrl_addr = CE_BASE_ADDRESS(CE_id);
     adf_os_spin_lock(&sc->target_lock);
     CE_state = sc->CE_id_to_state[CE_id];
+    struct pci_dev *pdev;
 
 
     if (!CE_state) {
@@ -1672,10 +1673,11 @@ CE_init(struct hif_pci_softc *sc,
             src_ring->per_transfer_context = (void **)ptr;
 
             /* Legacy platforms that do not support cache coherent DMA are unsupported */
+            pdev = scn->sc_osdev->bdev;
             src_ring->base_addr_owner_space_unaligned =
-                pci_alloc_consistent(scn->sc_osdev->bdev,
+                dma_alloc_coherent(&pdev->dev,
                                     (nentries * sizeof(struct CE_src_desc) + CE_DESC_RING_ALIGN),
-                                    &base_addr);
+                                    &base_addr, GFP_KERNEL);
             if (src_ring->base_addr_owner_space_unaligned == NULL) {
                 dev_err(&sc->pdev->dev, "ath ERROR: src ring has no DMA mem\n");
                 goto error_no_dma_mem;
@@ -1770,10 +1772,11 @@ CE_init(struct hif_pci_softc *sc,
             dest_ring->per_transfer_context = (void **)ptr;
 
             /* Legacy platforms that do not support cache coherent DMA are unsupported */
+            pdev = scn->sc_osdev->bdev;
             dest_ring->base_addr_owner_space_unaligned =
-                pci_alloc_consistent(scn->sc_osdev->bdev,
+                dma_alloc_coherent(&pdev->dev,
                                     (nentries * sizeof(struct CE_dest_desc) + CE_DESC_RING_ALIGN),
-                                    &base_addr);
+                                    &base_addr, GFP_KERNEL);
             if (dest_ring->base_addr_owner_space_unaligned == NULL) {
                 dev_err(&sc->pdev->dev, "ath ERROR: dest ring has no DMA mem\n");
                 goto error_no_dma_mem;
@@ -1838,23 +1841,28 @@ CE_fini(struct CE_handle *copyeng)
     unsigned int CE_id = CE_state->id;
     struct hif_pci_softc *sc = CE_state->sc;
     struct ol_softc *scn = sc->ol_sc;
+    struct pci_dev *pdev;
 
     CE_state->state = CE_UNUSED;
     CE_state->sc->CE_id_to_state[CE_id] = NULL;
     if (CE_state->src_ring) {
         if (CE_state->src_ring->shadow_base_unaligned)
             A_FREE(CE_state->src_ring->shadow_base_unaligned);
-        if (CE_state->src_ring->base_addr_owner_space_unaligned)
-            pci_free_consistent(scn->sc_osdev->bdev,
+        if (CE_state->src_ring->base_addr_owner_space_unaligned) {
+            pdev=scn->sc_osdev->bdev;
+            dma_free_coherent(&pdev->dev,
                    (CE_state->src_ring->nentries * sizeof(struct CE_src_desc) + CE_DESC_RING_ALIGN),
                    CE_state->src_ring->base_addr_owner_space_unaligned, CE_state->src_ring->base_addr_CE_space);
+        }
         A_FREE(CE_state->src_ring);
     }
     if (CE_state->dest_ring) {
-        if (CE_state->dest_ring->base_addr_owner_space_unaligned)
-            pci_free_consistent(scn->sc_osdev->bdev,
+        if (CE_state->dest_ring->base_addr_owner_space_unaligned) {
+            pdev=scn->sc_osdev->bdev;
+            dma_free_coherent(&pdev->dev,
                    (CE_state->dest_ring->nentries * sizeof(struct CE_dest_desc) + CE_DESC_RING_ALIGN),
                    CE_state->dest_ring->base_addr_owner_space_unaligned, CE_state->dest_ring->base_addr_CE_space);
+        }
         A_FREE(CE_state->dest_ring);
 
         /* epping */

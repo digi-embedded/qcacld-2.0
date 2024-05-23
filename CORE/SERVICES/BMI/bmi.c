@@ -79,6 +79,8 @@ very simple.
 void
 BMIInit(struct ol_softc *scn)
 {
+    struct pci_dev *pdev;
+
     if (!scn) {
         AR_DEBUG_PRINTF(ATH_DEBUG_ERR, ("Invalid scn context\n"));
         ASSERT(0);
@@ -101,10 +103,11 @@ BMIInit(struct ol_softc *scn)
         scn->pBMICmdBuf =
                 (A_UCHAR *)A_MALLOC(MAX_BMI_CMDBUF_SZ);
 #else
+        pdev = scn->sc_osdev->bdev;
         scn->pBMICmdBuf =
-                (A_UCHAR *)pci_alloc_consistent(scn->sc_osdev->bdev,
+                (A_UCHAR *)dma_alloc_coherent(&pdev->dev,
                                     MAX_BMI_CMDBUF_SZ,
-                                    &scn->BMICmd_pa);
+                                    &scn->BMICmd_pa, GFP_KERNEL);
 #endif
         ASSERT(scn->pBMICmdBuf);
     }
@@ -114,10 +117,11 @@ BMIInit(struct ol_softc *scn)
         scn->pBMIRspBuf =
                 (A_UCHAR *)A_MALLOC(MAX_BMI_CMDBUF_SZ);
 #else
+        pdev = scn->sc_osdev->bdev;
         scn->pBMIRspBuf =
-                (A_UCHAR *)pci_alloc_consistent(scn->sc_osdev->bdev,
+                (A_UCHAR *)dma_alloc_coherent(&pdev->dev,
                                 MAX_BMI_CMDBUF_SZ,
-                                &scn->BMIRsp_pa);
+                                &scn->BMIRsp_pa, GFP_KERNEL);
 #endif
         ASSERT(scn->pBMIRspBuf);
     }
@@ -128,11 +132,14 @@ BMIInit(struct ol_softc *scn)
 void
 BMICleanup(struct ol_softc *scn)
 {
+    struct pci_dev *pdev;
+
     if (scn->pBMICmdBuf) {
 #ifndef HIF_PCI
         A_FREE(scn->pBMICmdBuf );
 #else
-        pci_free_consistent(scn->sc_osdev->bdev, MAX_BMI_CMDBUF_SZ,
+        pdev = scn->sc_osdev->bdev;
+        dma_free_coherent(&pdev->dev, MAX_BMI_CMDBUF_SZ,
                         scn->pBMICmdBuf, scn->BMICmd_pa);
 #endif
         scn->pBMICmdBuf = NULL;
@@ -143,7 +150,8 @@ BMICleanup(struct ol_softc *scn)
 #ifndef HIF_PCI
         A_FREE(scn->pBMIRspBuf);
 #else
-        pci_free_consistent(scn->sc_osdev->bdev, MAX_BMI_CMDBUF_SZ,
+        pdev = scn->sc_osdev->bdev;
+        dma_free_coherent(&pdev->dev, MAX_BMI_CMDBUF_SZ,
                         scn->pBMIRspBuf, scn->BMIRsp_pa);
 #endif
         scn->pBMIRspBuf = NULL;
@@ -181,6 +189,7 @@ BMIDone(HIF_DEVICE *device, struct ol_softc *scn)
 
     scn->bmiDone = TRUE;
     cid = BMI_DONE;
+    struct pci_dev *pdev;
 
     if (!scn->pBMICmdBuf) {
         AR_DEBUG_PRINTF(ATH_DEBUG_ERR, ("Invalid scn BMICmdBuff\n"));
@@ -200,7 +209,8 @@ BMIDone(HIF_DEVICE *device, struct ol_softc *scn)
 #ifndef HIF_PCI
         A_FREE(scn->pBMICmdBuf);
 #else
-        pci_free_consistent(scn->sc_osdev->bdev, MAX_BMI_CMDBUF_SZ,
+        pdev = scn->sc_osdev->bdev;
+        dma_free_coherent(&pdev->dev, MAX_BMI_CMDBUF_SZ,
                         scn->pBMICmdBuf, scn->BMICmd_pa);
 #endif
         scn->pBMICmdBuf = NULL;
@@ -211,7 +221,8 @@ BMIDone(HIF_DEVICE *device, struct ol_softc *scn)
 #ifndef HIF_PCI
         A_FREE(scn->pBMIRspBuf);
 #else
-        pci_free_consistent(scn->sc_osdev->bdev, MAX_BMI_CMDBUF_SZ,
+        pdev = scn->sc_osdev->bdev;
+        dma_free_coherent(&pdev->dev, MAX_BMI_CMDBUF_SZ,
                         scn->pBMIRspBuf, scn->BMIRsp_pa);
 #endif
         scn->pBMIRspBuf = NULL;

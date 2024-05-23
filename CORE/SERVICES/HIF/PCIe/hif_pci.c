@@ -1126,6 +1126,7 @@ HIFDiagReadMem(HIF_DEVICE *hif_device, A_UINT32 address, A_UINT8 *data, int nbyt
     int i;
     hif_state = (struct HIF_CE_state *)hif_device;
     sc = hif_state->sc;
+    struct pci_dev *pdev;
 
     AR_DEBUG_PRINTF(ATH_DEBUG_TRC, (" %s\n",__FUNCTION__));
 
@@ -1166,15 +1167,16 @@ HIFDiagReadMem(HIF_DEVICE *hif_device, A_UINT32 address, A_UINT8 *data, int nbyt
      *   2) Buffer in DMA-able space
      */
     orig_nbytes = nbytes;
-    data_buf = (A_UCHAR *)pci_alloc_consistent(scn->sc_osdev->bdev,
+    pdev=scn->sc_osdev->bdev;
+    data_buf = (A_UCHAR *)dma_alloc_coherent(&pdev->dev,
                                              orig_nbytes,
-                                             &CE_data_base);
+                                             &CE_data_base, GFP_KERNEL);
     if (!data_buf) {
         status = A_NO_MEMORY;
         goto done;
     }
     adf_os_mem_set(data_buf, 0, orig_nbytes);
-    pci_dma_sync_single_for_device(scn->sc_osdev->bdev, CE_data_base, orig_nbytes, PCI_DMA_FROMDEVICE);
+    dma_sync_single_for_device(&pdev->dev, CE_data_base, orig_nbytes, DMA_FROM_DEVICE);
 
     remaining_bytes = orig_nbytes;
     CE_data = CE_data_base;
@@ -1260,7 +1262,7 @@ done:
     }
 
     if (data_buf) {
-       pci_free_consistent(scn->sc_osdev->bdev, orig_nbytes,
+       dma_free_coherent(&pdev->dev, orig_nbytes,
                         data_buf, CE_data_base);
     }
 
@@ -1311,6 +1313,7 @@ HIFDiagWriteMem(HIF_DEVICE *hif_device, A_UINT32 address, A_UINT8 *data, int nby
     CE_addr_t CE_data; /* Host buffer address in CE space */
     adf_os_dma_addr_t CE_data_base = 0;
     int i;
+    struct pci_dev *pdev;
 
     AR_DEBUG_PRINTF(ATH_DEBUG_TRC, (" %s\n",__FUNCTION__));
 
@@ -1329,9 +1332,10 @@ HIFDiagWriteMem(HIF_DEVICE *hif_device, A_UINT32 address, A_UINT8 *data, int nby
      *   2) Buffer in DMA-able space
      */
     orig_nbytes = nbytes;
-    data_buf = (A_UCHAR *)pci_alloc_consistent(scn->sc_osdev->bdev,
+    pdev=scn->sc_osdev->bdev;
+    data_buf = (A_UCHAR *)dma_alloc_coherent(&pdev->dev,
                                              orig_nbytes,
-                                             &CE_data_base);
+                                             &CE_data_base, GFP_KERNEL);
     if (!data_buf) {
         status = A_NO_MEMORY;
         goto done;
@@ -1339,7 +1343,7 @@ HIFDiagWriteMem(HIF_DEVICE *hif_device, A_UINT32 address, A_UINT8 *data, int nby
 
     /* Copy caller's data to allocated DMA buf */
     A_MEMCPY(data_buf, data, orig_nbytes);
-    pci_dma_sync_single_for_device(scn->sc_osdev->bdev, CE_data_base, orig_nbytes, PCI_DMA_TODEVICE);
+    dma_sync_single_for_device(&pdev->dev, CE_data_base, orig_nbytes, DMA_TO_DEVICE);
 
     /*
      * The address supplied by the caller is in the
@@ -1427,7 +1431,7 @@ done:
     A_TARGET_ACCESS_UNLIKELY(targid);
 
     if (data_buf) {
-        pci_free_consistent(scn->sc_osdev->bdev, orig_nbytes,
+        dma_free_coherent(&pdev->dev, orig_nbytes,
                          data_buf, CE_data_base);
     }
 
@@ -1518,6 +1522,7 @@ hif_post_recv_buffers_for_pipe(struct HIF_CE_pipe_info *pipe_info)
     struct ol_softc *scn = sc->ol_sc;
     a_status_t ret;
     uint32_t bufs_posted = 0;
+    struct pci_dev *pdev;
 
     buf_sz = pipe_info->buf_sz;
     if (buf_sz == 0) {
@@ -1584,8 +1589,9 @@ hif_post_recv_buffers_for_pipe(struct HIF_CE_pipe_info *pipe_info)
 
         CE_data = adf_nbuf_get_frag_paddr_lo(nbuf, 0);
 
-        pci_dma_sync_single_for_device(scn->sc_osdev->bdev, CE_data,
-                                       buf_sz, PCI_DMA_FROMDEVICE);
+        pdev = scn->sc_osdev->bdev;
+        dma_sync_single_for_device(&pdev->dev, CE_data,
+                                       buf_sz, DMA_FROM_DEVICE);
         status = CE_recv_buf_enqueue(ce_hdl, (void *)nbuf, CE_data);
         A_ASSERT(status == EOK);
         if (status != EOK) {
@@ -2033,6 +2039,7 @@ HIFExchangeBMIMsg(HIF_DEVICE *hif_device,
     int status = EOK;
     struct HIF_CE_pipe_info *recv_pipe_info = &(hif_state->pipe_info[BMI_CE_NUM_TO_HOST]);
     struct CE_handle *ce_recv = recv_pipe_info->ce_hdl;
+    struct pci_dev *pdev;
 
 #ifdef BMI_RSP_POLLING
     CE_addr_t buf;
@@ -2066,6 +2073,7 @@ HIFExchangeBMIMsg(HIF_DEVICE *hif_device,
     CE_request = scn->BMICmd_pa;
     transaction->bmi_request_CE = CE_request;
 
+    pdev = scn->sc_osdev->bdev;
     if (bmi_response) {
 
         /*
@@ -2075,7 +2083,7 @@ HIFExchangeBMIMsg(HIF_DEVICE *hif_device,
         transaction->bmi_response_host = bmi_response;
         transaction->bmi_response_CE = CE_response;
         /* dma_cache_sync(dev, bmi_response, BMI_DATASZ_MAX, DMA_FROM_DEVICE); */
-        pci_dma_sync_single_for_device(scn->sc_osdev->bdev, CE_response, BMI_DATASZ_MAX, PCI_DMA_FROMDEVICE);
+        dma_sync_single_for_device(&pdev->dev, CE_response, BMI_DATASZ_MAX, DMA_FROM_DEVICE);
         CE_recv_buf_enqueue(ce_recv, transaction, transaction->bmi_response_CE);
         /* NB: see HIF_BMI_recv_done */
     } else {
@@ -2084,7 +2092,7 @@ HIFExchangeBMIMsg(HIF_DEVICE *hif_device,
     }
 
     /* dma_cache_sync(dev, bmi_request, request_length, DMA_TO_DEVICE); */
-    pci_dma_sync_single_for_device(scn->sc_osdev->bdev, CE_request, request_length, PCI_DMA_TODEVICE);
+    dma_sync_single_for_device(&pdev->dev, CE_request, request_length, DMA_TO_DEVICE);
 
     status = CE_send(ce_send, transaction, CE_request, request_length, -1, 0);
     ASSERT(status == EOK);
