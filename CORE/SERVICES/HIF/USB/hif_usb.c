@@ -99,7 +99,7 @@ int notifyDeviceInsertedHandler(void *hHIF)
 	AR_DEBUG_PRINTF(ATH_DEBUG_TRC, ("+%s\n", __func__));
 	osDrvcallback.deviceInsertedHandler(osDrvcallback.context, hHIF);
 	AR_DEBUG_PRINTF(ATH_DEBUG_TRC, ("-%s\n", __func__));
-	kthread_kthread_complete_and_exit(NULL, 0);
+	kthread_complete_and_exit(NULL, 0);
 	return 0;
 }
 
@@ -110,7 +110,7 @@ int notifyDeviceSurprisedRemovedHandler(void *context)
 	AR_DEBUG_PRINTF(ATH_DEBUG_TRC, ("+%s\n", __func__));
 	osDrvcallback.deviceRemovedHandler(device->claimed_context, device);
 	AR_DEBUG_PRINTF(ATH_DEBUG_TRC, ("-%s\n", __func__));
-	kthread_kthread_complete_and_exit(NULL, 0);
+	kthread_complete_and_exit(NULL, 0);
 	return 0;
 }
 
