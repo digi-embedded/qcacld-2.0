@@ -38,7 +38,7 @@
 #ifndef __PARSE_H__
 #define __PARSE_H__
 
-#include <stdarg.h>
+#include <linux/stdarg.h>
 #include "sirMacPropExts.h"
 #include "dot11f.h"
 #ifdef WLAN_FEATURE_VOWIFI_11R

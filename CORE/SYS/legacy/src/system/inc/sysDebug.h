@@ -37,7 +37,7 @@
 #ifndef __SYS_DEBUG_H__
 #define __SYS_DEBUG_H__
 
-#include <stdarg.h>
+#include <linux/stdarg.h>
 # include "utilsApi.h"
 # include "sirDebug.h"
 # include "sirParams.h"

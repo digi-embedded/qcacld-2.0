@@ -106,7 +106,7 @@ extern unsigned g_txrx_print_level;
 
 #ifdef TXRX_PRINT_ENABLE
 
-#include <stdarg.h>       /* va_list */
+#include <linux/stdarg.h>       /* va_list */
 #include <adf_os_types.h> /* adf_os_vprint */
 
 /* Supress 4296 - expression is always true

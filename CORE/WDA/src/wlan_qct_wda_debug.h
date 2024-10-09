@@ -30,7 +30,7 @@
 #if  !defined (ANI_OS_TYPE_ANDROID)
 #include <stdio.h>
 #endif
-#include <stdarg.h>
+#include <linux/stdarg.h>
 
 #include "utilsApi.h"
 #include "sirDebug.h"

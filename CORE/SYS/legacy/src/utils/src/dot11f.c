@@ -117,7 +117,7 @@ typedef struct sIEDefn {
 #ifndef DOT11F_HAVE_LOG_MACROS
 
 #include <stdio.h>
-#include <stdarg.h>
+#include <linux/stdarg.h>
 
 #ifndef DOT11F_LOG_GATE
 #   define DOT11F_LOG_GATE FRLOGW

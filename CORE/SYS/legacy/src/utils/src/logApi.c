@@ -41,7 +41,7 @@
 #include <utilsApi.h>
 #include <wlan_qct_wda.h>
 
-#include <stdarg.h>
+#include <linux/stdarg.h>
 #include "utilsGlobal.h"
 #include "macInitApi.h"
 #include "palApi.h"

@@ -39,7 +39,7 @@
 #ifndef __UTILS_PARSE_H__
 #define __UTILS_PARSE_H__
 
-#include <stdarg.h>
+#include <linux/stdarg.h>
 #include "sirApi.h"
 #include "dot11f.h"
 #include "utilsApi.h"
