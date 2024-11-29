@@ -1579,6 +1579,10 @@ static inline void *hif_pci_get_virt_ramdump_mem(unsigned long *size)
 	if (in_interrupt() || irqs_disabled() || in_atomic())
 		flags = GFP_ATOMIC;
 
+#if defined(ANI_OS_TYPE_ANDROID)
+	flags |= __GFP_RETRY_MAYFAIL | __GFP_NOWARN;
+#endif
+
 	return kzalloc(length, flags);
 }
 

@@ -135,7 +135,7 @@ static inline void hif_release_ramdump_mem(unsigned long *address)
 }
 #endif
 #endif
-static A_STATUS
+static int
 ath_hif_sdio_probe(void *context, void *hif_handle)
 {
     int ret = 0;
@@ -293,7 +293,7 @@ ol_ath_sdio_configure(hif_softc_t hif_sc, struct net_device *dev, hif_handle_t *
     return ret;
 }
 
-static A_STATUS
+static int
 ath_hif_sdio_remove(void *context, void *hif_handle)
 {
     ENTER();

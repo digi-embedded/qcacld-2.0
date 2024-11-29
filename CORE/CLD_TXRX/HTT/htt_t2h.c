@@ -1095,7 +1095,7 @@ int8_t
 htt_rx_ind_noise_floor_chain(htt_pdev_handle pdev, adf_nbuf_t rx_ind_msg,
 			     int8_t chain)
 {
-	int8_t noise_floor;
+	int8_t noise_floor = HTT_NOISE_FLOOR_INVALID;;
 	u_int32_t *msg_word;
 
 	/* only chain0/1 used with 11p DSRC */

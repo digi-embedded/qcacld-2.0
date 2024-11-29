@@ -2124,7 +2124,7 @@ sapDfsIsChannelInNolList(ptSapContext sapContext, v_U8_t channelNumber,
 uint8_t sap_select_default_oper_chan_ini(tHalHandle hal, uint32_t acs_11a)
 {
 	uint32_t operating_band = 0;
-	uint8_t channel;
+	uint8_t channel = 0;
 	ccmCfgGetInt(hal, WNI_CFG_SAP_CHANNEL_SELECT_OPERATING_BAND,
 			&operating_band);
 	if (acs_11a || operating_band == RF_SUBBAND_5_LOW_GHZ ||

@@ -1043,8 +1043,9 @@ static void __vos_process_wd_timer(void)
  * Wrapper function to process timer work.
  * return - void
  */
-void vos_process_wd_timer(void)
+void vos_process_wd_timer(struct work_struct *twork)
 {
+	(void)(twork);
 	vos_ssr_protect(__func__);
 	__vos_process_wd_timer();
 	vos_ssr_unprotect(__func__);

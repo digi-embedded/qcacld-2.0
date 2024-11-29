@@ -9707,6 +9707,11 @@ static int __hdd_open(struct net_device *dev)
        }
    }
 
+   if (hdd_start_adapter(pHddCtx, pAdapter) != VOS_STATUS_SUCCESS) {
+       hddLog(LOGE, FL("Failed to start adapter"));
+       return -EINVAL;
+   }
+
    set_bit(DEVICE_IFACE_OPENED, &pAdapter->event_flags);
    if (hdd_connIsConnected(WLAN_HDD_GET_STATION_CTX_PTR(pAdapter))) {
        hddLog(LOG1, FL("Enabling Tx Queues"));
@@ -10241,7 +10246,7 @@ static int __hdd_stop(struct net_device *dev)
     * Notice that the hdd_stop_adapter is requested not to close the session
     * That is intentional to be able to scan if it is a STA/P2P interface
     */
-   hdd_stop_adapter(pHddCtx, pAdapter, VOS_FALSE);
+   hdd_stop_adapter(pHddCtx, pAdapter, VOS_TRUE);
 
    /* DeInit the adapter. This ensures datapath cleanup as well */
    hdd_deinit_adapter(pHddCtx, pAdapter, true);
@@ -10375,7 +10380,7 @@ void hdd_full_pwr_cbk(void *callbackContext, eHalStatus status)
    hdd_context_t *pHddCtx = (hdd_context_t*)callbackContext;
 
    hddLog(VOS_TRACE_LEVEL_INFO_HIGH,"HDD full Power callback status = %d", status);
-   if(&pHddCtx->full_pwr_comp_var)
+   if(pHddCtx)
    {
       complete(&pHddCtx->full_pwr_comp_var);
    }
@@ -12599,6 +12604,55 @@ void wlan_hdd_reset_prob_rspies(hdd_adapter_t* pHostapdAdapter)
     }
 }
 
+VOS_STATUS hdd_wait_for_sme_open_sesion(hdd_context_t *pHddCtx, hdd_adapter_t *pAdapter)
+{
+   eHalStatus halStatus = eHAL_STATUS_SUCCESS;
+   VOS_STATUS status = VOS_STATUS_E_FAILURE;
+   tANI_U32 type, subType;
+   unsigned long rc;
+
+    if (test_bit(SME_SESSION_OPENED, &pAdapter->event_flags)) {
+        hddLog(LOGE, FL("session is opened:%d"), pAdapter->sessionId);
+        return VOS_STATUS_SUCCESS;
+    }
+
+   status = vos_get_vdev_types(pAdapter->device_mode, &type, &subType);
+   if (VOS_STATUS_SUCCESS != status)
+   {
+      hddLog(VOS_TRACE_LEVEL_ERROR, "failed to get vdev type");
+      goto error_sme_open;
+   }
+
+   INIT_COMPLETION(pAdapter->session_open_comp_var);
+
+   //Open a SME session for future operation
+   halStatus = sme_OpenSession( pHddCtx->hHal, hdd_smeRoamCallback, pAdapter,
+         (tANI_U8 *)&pAdapter->macAddressCurrent, &pAdapter->sessionId,
+         type, subType);
+   if ( !HAL_STATUS_SUCCESS( halStatus ) )
+   {
+      hddLog(VOS_TRACE_LEVEL_FATAL,
+             "sme_OpenSession() failed with status code %08d [x%08x]",
+                                                 halStatus, halStatus );
+      status = VOS_STATUS_E_FAILURE;
+      goto error_sme_open;
+   }
+   //Block on a completion variable. Can't wait forever though.
+   rc = wait_for_completion_timeout(
+                        &pAdapter->session_open_comp_var,
+                        msecs_to_jiffies(WLAN_WAIT_TIME_SESSIONOPENCLOSE));
+   if (!rc) {
+      hddLog(VOS_TRACE_LEVEL_FATAL,
+             FL("Session is not opened within timeout period code %ld"),
+             rc );
+      status = VOS_STATUS_E_FAILURE;
+      goto error_sme_open;
+   }
+
+error_sme_open:
+      return status;
+}
+
 /**
  * hdd_wait_for_sme_close_sesion() - Close and wait for SME session close
  * @hdd_ctx: HDD context which is already NULL validated
@@ -12634,6 +12688,23 @@ static void hdd_wait_for_sme_close_sesion(hdd_context_t *hdd_ctx,
         if (!rc)
             hddLog(LOGE, FL("failure waiting for session_close_comp_var"));
     }
+}
+
+VOS_STATUS hdd_start_adapter( hdd_context_t *pHddCtx, hdd_adapter_t *pAdapter)
+{
+   VOS_STATUS status = VOS_STATUS_SUCCESS;
+
+   switch(pAdapter->device_mode)
+   {
+      case WLAN_HDD_INFRA_STATION:
+      case WLAN_HDD_IBSS:
+      case WLAN_HDD_P2P_CLIENT:
+      case WLAN_HDD_P2P_DEVICE:
+      case WLAN_HDD_NDI:
+         status = hdd_wait_for_sme_open_sesion(pHddCtx, pAdapter);
+         break;
+   }
+   return status;
 }
 
 VOS_STATUS hdd_stop_adapter( hdd_context_t *pHddCtx, hdd_adapter_t *pAdapter,

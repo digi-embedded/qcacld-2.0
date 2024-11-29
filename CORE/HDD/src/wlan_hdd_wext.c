@@ -2013,12 +2013,12 @@ static int __iw_get_name(struct net_device *dev,
  */
 static int iw_get_name(struct net_device *dev,
 			 struct iw_request_info *info,
-			 char *wrqu, char *extra)
+			 union iwreq_data *wrqu, char *extra)
 {
 	int ret;
 
 	vos_ssr_protect(__func__);
-	ret = __iw_get_name(dev, info, wrqu, extra);
+	ret = __iw_get_name(dev, info, (char *)wrqu, extra);
 	vos_ssr_unprotect(__func__);
 
 	return ret;
@@ -2229,12 +2229,12 @@ static int __iw_get_freq(struct net_device *dev, struct iw_request_info *info,
  * Return: 0 on success, error number otherwise
  */
 static int iw_get_freq(struct net_device *dev, struct iw_request_info *info,
-		       struct iw_freq *fwrq, char *extra)
+		       union iwreq_data *fwrq, char *extra)
 {
 	int ret;
 
 	vos_ssr_protect(__func__);
-	ret = __iw_get_freq(dev, info, fwrq, extra);
+	ret = __iw_get_freq(dev, info, (struct iw_freq *)fwrq, extra);
 	vos_ssr_unprotect(__func__);
 
 	return ret;
@@ -2924,12 +2924,12 @@ static int __iw_get_encode(struct net_device *dev, struct iw_request_info *info,
  * Return: 0 on success, error number otherwise
  */
 static int iw_get_encode(struct net_device *dev, struct iw_request_info *info,
-			 struct iw_point *dwrq, char *extra)
+			 union iwreq_data *dwrq, char *extra)
 {
 	int ret;
 
 	vos_ssr_protect(__func__);
-	ret = __iw_get_encode(dev, info, dwrq, extra);
+	ret = __iw_get_encode(dev, info, (struct iw_point *)dwrq, extra);
 	vos_ssr_unprotect(__func__);
 
 	return ret;
@@ -4692,12 +4692,12 @@ static int __iw_get_encodeext(struct net_device *dev,
  */
 static int iw_get_encodeext(struct net_device *dev,
 			    struct iw_request_info *info,
-			    struct iw_point *dwrq, char *extra)
+			    union iwreq_data *dwrq, char *extra)
 {
 	int ret;
 
 	vos_ssr_protect(__func__);
-	ret = __iw_get_encodeext(dev, info, dwrq, extra);
+	ret = __iw_get_encodeext(dev, info, (struct iw_point *)dwrq, extra);
 	vos_ssr_unprotect(__func__);
 
 	return ret;

@@ -1775,7 +1775,7 @@ tANI_BOOLEAN sme_IsWmmSupported(tHalHandle hHal);
 //Upper layer to get the list of the base channels to scan for passively 11d info from csr
 eHalStatus sme_ScanGetBaseChannels( tHalHandle hHal, tCsrChannelInfo * pChannelInfo );
 
-typedef void ( *tSmeChangeCountryCallback)(void *pContext);
+typedef void * ( *tSmeChangeCountryCallback)(void *pContext);
 /* ---------------------------------------------------------------------------
 
     \fn sme_ChangeCountryCode
