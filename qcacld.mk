@@ -32,15 +32,23 @@ KBUILD_OPTIONS += CONFIG_ARCH_QCOM=n
 KBUILD_OPTIONS += CONFIG_ATH_11AC_TXCOMPACT=1
 endif
 
+#
+# While building external modules, we inherit the configuration from the
+# kernel. If the kernel enables CONFIG_WERROR, the module does not build. Disable
+# locally "-Werror" to allow building for Android
+#
+KBUILD_OPTIONS += KCFLAGS=-Wno-everything
+
 QCACLD_OUT := $(TARGET_OUT_INTERMEDIATES)/QCACLD_OBJ
 
 $(QCACLD_OUT):
 	mkdir -p $@
 
-$(QCACLD_OUT)/wlan.ko: | $(QCACLD_OUT)
+.PHONY: qcacld
+qcacld: | $(QCACLD_OUT)
+	$(hide) if [ ${clean_build} = 1 ]; then \
+		$(MAKE) $(kernel_build_make_env) M=$(ANDROID_BUILD_TOP)/$(QCACLD_PATH) clean; \
+	fi
 	@ $(kernel_build_shell_env) $(MAKE) $(kernel_build_make_env) \
 		M=$(ANDROID_BUILD_TOP)/$(QCACLD_PATH) modules $(KBUILD_OPTIONS)
-	cp $(ANDROID_BUILD_TOP)/$(QCACLD_PATH)/wlan.ko $@
-
-.PHONY: qcacld
-qcacld: $(QCACLD_OUT)/wlan.ko
+	cp $(QCACLD_PATH)/wlan.ko $(QCACLD_OUT)
