@@ -1,0 +1,15 @@
+prebuilt_firmware {
+    name: "WCNSS_cfg",
+    src: "firmware_bin/WCNSS_cfg.dat",
+    filename: "cfg.dat",
+    relative_install_path: "wlan",
+    proprietary: true,
+}
+
+prebuilt_firmware {
+    name: "WCNSS_qcom_cfg",
+    src: "firmware_bin/WCNSS_qcom_cfg.ini",
+    filename: "qcom_cfg.ini",
+    relative_install_path: "wlan",
+    proprietary: true,
+}
