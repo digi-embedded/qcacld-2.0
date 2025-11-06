@@ -4593,9 +4593,9 @@ typedef struct sDot11fIERSN {
     tANI_U16     version /* Must be 1! */;
     tANI_U8      gp_cipher_suite[4];
     tANI_U16     pwise_cipher_suite_count;
-    tANI_U8      pwise_cipher_suites[4][4];
+    tANI_U8      pwise_cipher_suites[6][4];
     tANI_U16     akm_suite_count;
-    tANI_U8      akm_suites[4][4];
+    tANI_U8      akm_suites[6][4];
     tANI_U8      RSN_Cap[2];
     tANI_U16     pmkid_count;
     tANI_U8      pmkid[4][16];
@@ -4607,7 +4607,7 @@ typedef struct sDot11fIERSN {
 // N.B. These #defines do *not* include the EID & length
 #define DOT11F_IE_RSN_MIN_LEN ( 6 )
 
-#define DOT11F_IE_RSN_MAX_LEN ( 114 )
+#define DOT11F_IE_RSN_MAX_LEN ( 130 )
 
 #ifdef __cplusplus
 extern "C" {
