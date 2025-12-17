@@ -1,12 +1,14 @@
 KERNEL_SRC ?= /lib/modules/$(shell uname -r)/build
 
-KBUILD_OPTIONS := WLAN_ROOT=$(PWD)
+WLAN_ROOT ?= $(CURDIR)
+
+KBUILD_OPTIONS := WLAN_ROOT=$(WLAN_ROOT)
 KBUILD_OPTIONS += MODNAME?=wlan
 
 # Determine if the driver license is Open source or proprietary
 # This is determined under the assumption that LICENSE doesn't change.
 # Please change here if driver license text changes.
-LICENSE_FILE ?= $(PWD)/$(WLAN_ROOT)/CORE/HDD/src/wlan_hdd_main.c
+LICENSE_FILE ?= $(WLAN_ROOT)/CORE/HDD/src/wlan_hdd_main.c
 WLAN_OPEN_SOURCE = $(shell if grep -q "MODULE_LICENSE(\"Dual BSD/GPL\")" \
 		$(LICENSE_FILE); then echo 1; else echo 0; fi)
 
