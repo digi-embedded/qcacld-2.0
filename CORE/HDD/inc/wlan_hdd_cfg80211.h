@@ -2928,7 +2928,9 @@ v_U8_t* wlan_hdd_cfg80211_get_ie_ptr(const v_U8_t *pIes,
                                      int length,
                                      v_U8_t eid);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 0, 0))
+#if !defined(CFG80211_DEL_STA_V2)
 #define CFG80211_DEL_STA_V2
+#endif
 #endif
 
 #ifdef CFG80211_DEL_STA_V2
